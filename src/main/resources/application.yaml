@@ -1,0 +1,31 @@
+spring:
+  application:
+    name: DepartmentService
+  datasource:
+    url: jdbc:postgresql://${DB_SERVER}:${DB_PORT}/departmentdb
+    username: ${DB_USERNAME}
+    password: ${DB_PASSWORD}
+    driver-class-name: org.postgresql.Driver
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: true
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.PostgreSQLDialect
+
+#spring:
+#  application:
+#    name: DepartmentService
+#  datasource:
+#    url: jdbc:postgresql://${DB_SERVER:localhost}:${DB_PORT:5432}/departmentdb
+#    username: ${DB_USERNAME:deptuser}
+#    password: ${DB_PASSWORD:1qazZAQ!2wsxXSW@}
+#    driver-class-name: org.postgresql.Driver
+#  jpa:
+#    hibernate:
+#      ddl-auto: update
+#    show-sql: true
+#    properties:
+#      hibernate:
+#        dialect: org.hibernate.dialect.PostgreSQLDialect
