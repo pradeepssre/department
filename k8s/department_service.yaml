@@ -1,0 +1,100 @@
+---
+# Secret for database connection
+apiVersion: v1
+kind: Secret
+metadata:
+  name: department-db-secret
+  namespace: default
+type: Opaque
+stringData:
+  DB_SERVER: "hrservices.postgres.database.azure.com"
+  DB_PORT: "5432"
+  DB_USERNAME: "deptuser"
+  DB_PASSWORD: "Dept123!"
+
+---
+# Deployment
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: department-service
+  namespace: default
+  labels:
+    app: department-service
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: department-service
+  template:
+    metadata:
+      labels:
+        app: department-service
+    spec:
+      nodeSelector:
+        agentpool: workerpool
+      containers:
+        - name: department-service
+          image: hrmscontainer.azurecr.io/department-service:latest
+          ports:
+            - containerPort: 8080
+          env:
+            # Database configuration matching your application.yaml
+            - name: DB_SERVER
+              valueFrom:
+                secretKeyRef:
+                  name: department-db-secret
+                  key: DB_SERVER
+            - name: DB_PORT
+              valueFrom:
+                secretKeyRef:
+                  name: department-db-secret
+                  key: DB_PORT
+            - name: DB_USERNAME
+              valueFrom:
+                secretKeyRef:
+                  name: department-db-secret
+                  key: DB_USERNAME
+            - name: DB_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: department-db-secret
+                  key: DB_PASSWORD
+          resources:
+            requests:
+              memory: "256Mi"
+              cpu: "250m"
+            limits:
+              memory: "512Mi"
+              cpu: "500m"
+          livenessProbe:
+            httpGet:
+              path: /actuator/health
+              port: 8080
+            initialDelaySeconds: 60
+            periodSeconds: 30
+          readinessProbe:
+            httpGet:
+              path: /actuator/health
+              port: 8080
+            initialDelaySeconds: 30
+            periodSeconds: 10
+
+---
+# Service
+apiVersion: v1
+kind: Service
+metadata:
+  name: department-service
+  namespace: default
+  labels:
+    app: department-service
+spec:
+  selector:
+    app: department-service
+  ports:
+    - name: http
+      protocol: TCP
+      port: 80
+      targetPort: 8080
+  type: ClusterIP
